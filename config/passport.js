@@ -214,9 +214,11 @@ module.exports = function(passport) {
   passport.use(new TwitterStrategy({
     consumerKey     : configAuth.twitterAuth.consumerKey,
     consumerSecret  : configAuth.twitterAuth.consumerSecret,
-    callbackURL     : configAuth.twitterAuth.callbackURL
+    callbackURL     : configAuth.twitterAuth.callbackURL,
+    passReqToCallback : true
   },
   function(req, token, tokenSecret, profile, done) {
+    console.log(req);
     // make the code asynchronous
     // User.findOne won't fire until we have all our data back from Twitter
   	process.nextTick(function() {
@@ -269,7 +271,7 @@ module.exports = function(passport) {
         // user already exists and is logged in, we have to link accounts
         var user = req.user; // pull the user out of the session
 
-  			// update the current users facebook credentials
+  			// update the current users twitter credentials
         user.twitter.id    = profile.id;
         user.twitter.token = token;
         user.twitter.username  = profile.username;
@@ -295,6 +297,7 @@ module.exports = function(passport) {
     clientID        : configAuth.googleAuth.clientID,
     clientSecret    : configAuth.googleAuth.clientSecret,
     callbackURL     : configAuth.googleAuth.callbackURL,
+    passReqToCallback : true
   },
   function(req, token, refreshToken, profile, done) {
   	// make the code asynchronous
@@ -310,10 +313,10 @@ module.exports = function(passport) {
           if (user) {
             // if there is a user id already but no token (user was linked at one point and then removed)
           	// just add our token and profile information
-            if (!user.facebook.token) {
+            if (!user.google.token) {
               user.google.token = token;
-              user.facebook.name  = profile.displayName;
-              user.facebook.email = profile.emails[0].value;
+              user.google.name  = profile.displayName;
+              user.google.email = profile.emails[0].value;
 
               user.save(function(err) {
                 if (err)
@@ -347,7 +350,7 @@ module.exports = function(passport) {
         // user already exists and is logged in, we have to link accounts
         var user = req.user; // pull the user out of the session
 
-        // update the current users facebook credentials
+        // update the current users google credentials
         user.google.id    = profile.id;
         user.google.token = token;
         user.google.name  = profile.displayName;
